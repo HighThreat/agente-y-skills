@@ -18,7 +18,7 @@ export GITHUB_BRANCH="main"
 
 export APP_NAME="gh-oidc-agente-y-skills"
 export TFSTATE_RG="tfstate-rg"
-export TFSTATE_STORAGE="tfstatemyorg12345"          # ejemplo; reemplaza "myorg12345" por un sufijo propio y único global
+export TFSTATE_STORAGE="tfstatemyorg12345"          # ejemplo; debe ser único global en Azure y usar solo minúsculas/números
 export TFSTATE_CONTAINER="tfstate"
 ```
 
@@ -67,7 +67,7 @@ az ad app federated-credential create \
 ```
 
 ### 2.5 Asignar permisos RBAC al Service Principal
-Nota: este Terraform crea recursos y además crea un `azurerm_role_assignment`, por lo que se requiere permiso para administrar roles en el scope objetivo.
+Nota: se asignan ambos roles porque Terraform necesita crear recursos (`Contributor`) y también crear asignaciones de rol (`User Access Administrator`).
 
 ```bash
 SP_OBJECT_ID=$(az ad sp show --id "$APP_ID" --query id -o tsv)
@@ -116,7 +116,8 @@ az resource list --subscription "$SUBSCRIPTION_ID" --query "[?contains(name,'age
 
 ### 5.3 Validar despliegue en AKS
 ```bash
-# Estos valores los exponen los outputs de Terraform en el pipeline:
+# Estos valores se obtienen desde los pasos "Read Terraform outputs" y "Terraform apply"
+# del workflow en GitHub Actions, o ejecutando `terraform -chdir=infra output`.
 export AKS_RG="<resource_group_name>"
 export AKS_NAME="<cluster_name>"
 
