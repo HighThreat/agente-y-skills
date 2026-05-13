@@ -18,7 +18,7 @@ export GITHUB_BRANCH="main"
 
 export APP_NAME="gh-oidc-agente-y-skills"
 export TFSTATE_RG="tfstate-rg"
-export TFSTATE_STORAGE="tfstatemyorg12345"          # ejemplo; debe ser globalmente único y en minúsculas
+export TFSTATE_STORAGE="tfstatemyorg12345"          # ejemplo; reemplaza "myorg12345" por un sufijo propio y único global
 export TFSTATE_CONTAINER="tfstate"
 ```
 
@@ -116,7 +116,7 @@ az resource list --subscription "$SUBSCRIPTION_ID" --query "[?contains(name,'age
 
 ### 5.3 Validar despliegue en AKS
 ```bash
-# Estos valores los expone Terraform output en el pipeline:
+# Estos valores los exponen los outputs de Terraform en el pipeline:
 export AKS_RG="<resource_group_name>"
 export AKS_NAME="<cluster_name>"
 
