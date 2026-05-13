@@ -67,7 +67,7 @@ az ad app federated-credential create \
 ```
 
 ### 2.5 Asignar permisos RBAC al Service Principal
-Nota: se asignan ambos roles porque Terraform necesita crear recursos (`Contributor`) y también crear asignaciones de rol (`User Access Administrator`).
+Nota: se asignan ambos roles porque Terraform necesita crear recursos (`Contributor`) y también crear asignaciones de rol (`User Access Administrator`). Como buena práctica, usa el scope más pequeño posible (por ejemplo, Resource Group) si tu implementación no requiere alcance a toda la suscripción.
 
 ```bash
 SP_OBJECT_ID=$(az ad sp show --id "$APP_ID" --query id -o tsv)
@@ -116,7 +116,8 @@ az resource list --subscription "$SUBSCRIPTION_ID" --query "[?contains(name,'age
 
 ### 5.3 Validar despliegue en AKS
 ```bash
-# Estos valores se obtienen desde los pasos "Read Terraform outputs" y "Terraform apply"
+# Estos valores corresponden a los outputs `resource_group_name` y `cluster_name`.
+# Se obtienen desde los pasos "Read Terraform outputs" y "Terraform apply"
 # del workflow en GitHub Actions, o ejecutando `terraform -chdir=infra output`.
 export AKS_RG="<resource_group_name>"
 export AKS_NAME="<cluster_name>"
