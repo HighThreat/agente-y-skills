@@ -18,7 +18,7 @@ export GITHUB_BRANCH="main"
 
 export APP_NAME="gh-oidc-agente-y-skills"
 export TFSTATE_RG="tfstate-rg"
-export TFSTATE_STORAGE="tfstatemyorg12345"          # ejemplo; debe ser globalmente único y minúsculas
+export TFSTATE_STORAGE="tfstatemyorg12345"          # ejemplo; debe ser globalmente único y en minúsculas
 export TFSTATE_CONTAINER="tfstate"
 ```
 
@@ -67,7 +67,7 @@ az ad app federated-credential create \
 ```
 
 ### 2.5 Asignar permisos RBAC al Service Principal
-> Este Terraform crea recursos y además crea un `azurerm_role_assignment`, por lo que se requiere permiso para administrar roles en el scope objetivo.
+Nota: este Terraform crea recursos y además crea un `azurerm_role_assignment`, por lo que se requiere permiso para administrar roles en el scope objetivo.
 
 ```bash
 SP_OBJECT_ID=$(az ad sp show --id "$APP_ID" --query id -o tsv)
