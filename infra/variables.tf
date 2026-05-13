@@ -1,7 +1,7 @@
-variable "aws_region" {
-  description = "AWS region for deployment"
+variable "location" {
+  description = "Azure region for deployment"
   type        = string
-  default     = "us-east-1"
+  default     = "eastus"
 }
 
 variable "project" {
@@ -23,19 +23,26 @@ variable "owner" {
 }
 
 variable "cluster_version" {
-  description = "EKS cluster Kubernetes version"
+  description = "AKS cluster Kubernetes version (null to use default from Azure)"
   type        = string
-  default     = "1.30"
+  default     = null
+  nullable    = true
 }
 
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
-  type        = string
-  default     = "10.0.0.0/16"
+variable "node_count" {
+  description = "Default node count for AKS system node pool"
+  type        = number
+  default     = 2
 }
 
-variable "cluster_endpoint_public_access_cidrs" {
-  description = "Allowed CIDRs for public cluster endpoint"
-  type        = list(string)
-  default     = ["0.0.0.0/0"]
+variable "node_vm_size" {
+  description = "VM size for AKS system node pool"
+  type        = string
+  default     = "Standard_B2s"
+}
+
+variable "acr_sku" {
+  description = "SKU for Azure Container Registry"
+  type        = string
+  default     = "Basic"
 }

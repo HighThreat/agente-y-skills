@@ -1,0 +1,87 @@
+name: deploy-aks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  TF_IN_AUTOMATION: true
+  ARM_USE_OIDC: true
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform format check
+        run: terraform -chdir="${{ github.workspace }}/infra" fmt -check -recursive
+
+      - name: Terraform init
+        run: terraform -chdir="${{ github.workspace }}/infra" init
+
+      - name: Terraform validate
+        run: terraform -chdir="${{ github.workspace }}/infra" validate
+
+      - name: Terraform apply
+        run: terraform -chdir="${{ github.workspace }}/infra" apply -auto-approve
+
+      - name: Read Terraform outputs
+        id: tfout
+        run: |
+          echo "cluster_name=$(terraform -chdir='${{ github.workspace }}/infra' output -raw cluster_name)" >> "$GITHUB_OUTPUT"
+          echo "resource_group_name=$(terraform -chdir='${{ github.workspace }}/infra' output -raw resource_group_name)" >> "$GITHUB_OUTPUT"
+          echo "acr_login_server=$(terraform -chdir='${{ github.workspace }}/infra' output -raw acr_login_server)" >> "$GITHUB_OUTPUT"
+
+      - name: Login to Azure Container Registry
+        env:
+          ACR_LOGIN_SERVER: ${{ steps.tfout.outputs.acr_login_server }}
+        run: |
+          ACR_NAME="${ACR_LOGIN_SERVER%%.azurecr.io}"
+          az acr login --name "$ACR_NAME"
+
+      - name: Build and push image
+        env:
+          ACR_LOGIN_SERVER: ${{ steps.tfout.outputs.acr_login_server }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t "$ACR_LOGIN_SERVER:$IMAGE_TAG" "${{ github.workspace }}"
+          docker push "$ACR_LOGIN_SERVER:$IMAGE_TAG"
+
+      - name: Configure kubectl for AKS
+        run: |
+          az aks get-credentials \
+            --resource-group "${{ steps.tfout.outputs.resource_group_name }}" \
+            --name "${{ steps.tfout.outputs.cluster_name }}" \
+            --overwrite-existing
+
+      - name: Deploy to AKS
+        env:
+          ACR_LOGIN_SERVER: ${{ steps.tfout.outputs.acr_login_server }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          kubectl apply -f "${{ github.workspace }}/k8s/namespace.yaml"
+          sed "s|IMAGE_PLACEHOLDER|$ACR_LOGIN_SERVER:$IMAGE_TAG|g" "${{ github.workspace }}/k8s/deployment.yaml" | kubectl apply -f -
+          kubectl apply -f "${{ github.workspace }}/k8s/service.yaml"
+          kubectl rollout status deployment/agente-app -n agente --timeout=300s
