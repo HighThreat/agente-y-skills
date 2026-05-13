@@ -3,7 +3,7 @@
 Trabajo base de CI/CD para despliegue en **Azure AKS** con GitHub Actions y Terraform.
 
 ## Contenido
-- `/home/runner/work/agente-y-skills/agente-y-skills/docs/trabajo-cicd-eks.md`: documentación funcional del flujo (adaptable a Azure).
+- `/home/runner/work/agente-y-skills/agente-y-skills/docs/trabajo-cicd-aks.md`: documentación funcional del flujo (adaptable a Azure).
 - `/home/runner/work/agente-y-skills/agente-y-skills/infra`: infraestructura Terraform (Resource Group, AKS, ACR y backend remoto en Azure Storage).
 - `/home/runner/work/agente-y-skills/agente-y-skills/.github/workflows/deploy-aks.yml`: pipeline de despliegue.
 - `/home/runner/work/agente-y-skills/agente-y-skills/k8s`: manifiestos Kubernetes.
