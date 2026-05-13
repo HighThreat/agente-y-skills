@@ -18,7 +18,7 @@ export GITHUB_BRANCH="main"
 
 export APP_NAME="gh-oidc-agente-y-skills"
 export TFSTATE_RG="tfstate-rg"
-export TFSTATE_STORAGE="tfstatemyorg12345"          # ejemplo; debe ser único global en Azure y usar solo minúsculas/números
+export TFSTATE_STORAGE="tfstatemyorg12345"          # ejemplo; único global, solo minúsculas/números, 3-24 caracteres, sin guiones
 export TFSTATE_CONTAINER="tfstate"
 ```
 
@@ -67,7 +67,7 @@ az ad app federated-credential create \
 ```
 
 ### 2.5 Asignar permisos RBAC al Service Principal
-Nota: se asignan ambos roles porque Terraform necesita crear recursos (`Contributor`) y también crear asignaciones de rol (`User Access Administrator`). Como buena práctica, usa el scope más pequeño posible (por ejemplo, Resource Group) si tu implementación no requiere alcance a toda la suscripción.
+Nota: se asignan ambos roles porque Terraform necesita crear recursos (`Contributor`) y también crear asignaciones de rol (`User Access Administrator`). Como buena práctica, usa el scope más pequeño posible (Resource Group). Si pre-creas el RG objetivo, asigna ambos roles en ese RG en vez de a nivel de suscripción.
 
 ```bash
 SP_OBJECT_ID=$(az ad sp show --id "$APP_ID" --query id -o tsv)
