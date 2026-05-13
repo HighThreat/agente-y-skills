@@ -10,15 +10,15 @@ Desplegar este repositorio en Azure usando:
 
 ### 2.1 Variables base (reemplazar valores)
 ```bash
-export SUBSCRIPTION_ID="<tu-subscription-id>"
-export TENANT_ID="<tu-tenant-id>"
+export SUBSCRIPTION_ID="<tu-subscription-id>" # ejemplo: az account show --query id -o tsv
+export TENANT_ID="<tu-tenant-id>"             # ejemplo: az account show --query tenantId -o tsv
 export GITHUB_OWNER="Leocloud-highthreat"
 export GITHUB_REPO="agente-y-skills"
 export GITHUB_BRANCH="main"
 
 export APP_NAME="gh-oidc-agente-y-skills"
 export TFSTATE_RG="tfstate-rg"
-export TFSTATE_STORAGE="tfstate<tuorg><random>"     # debe ser globalmente único y minúsculas
+export TFSTATE_STORAGE="tfstatemyorg12345"          # ejemplo; debe ser globalmente único y minúsculas
 export TFSTATE_CONTAINER="tfstate"
 ```
 
