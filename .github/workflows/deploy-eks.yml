@@ -1,0 +1,74 @@
+name: deploy-eks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  TF_IN_AUTOMATION: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform format check
+        run: terraform -chdir="${{ github.workspace }}/infra" fmt -check -recursive
+
+      - name: Terraform init
+        run: terraform -chdir="${{ github.workspace }}/infra" init
+
+      - name: Terraform validate
+        run: terraform -chdir="${{ github.workspace }}/infra" validate
+
+      - name: Terraform apply
+        run: terraform -chdir="${{ github.workspace }}/infra" apply -auto-approve
+
+      - name: Read Terraform outputs
+        id: tfout
+        run: |
+          echo "cluster_name=$(terraform -chdir='${{ github.workspace }}/infra' output -raw cluster_name)" >> "$GITHUB_OUTPUT"
+          echo "ecr_repository_url=$(terraform -chdir='${{ github.workspace }}/infra' output -raw ecr_repository_url)" >> "$GITHUB_OUTPUT"
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        env:
+          ECR_REPOSITORY_URL: ${{ steps.tfout.outputs.ecr_repository_url }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t "$ECR_REPOSITORY_URL:$IMAGE_TAG" "${{ github.workspace }}"
+          docker push "$ECR_REPOSITORY_URL:$IMAGE_TAG"
+
+      - name: Configure kubectl for EKS
+        run: aws eks update-kubeconfig --region "$AWS_REGION" --name "${{ steps.tfout.outputs.cluster_name }}"
+
+      - name: Deploy to EKS
+        env:
+          ECR_REPOSITORY_URL: ${{ steps.tfout.outputs.ecr_repository_url }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          kubectl apply -f "${{ github.workspace }}/k8s/namespace.yaml"
+          sed "s|IMAGE_PLACEHOLDER|$ECR_REPOSITORY_URL:$IMAGE_TAG|g" "${{ github.workspace }}/k8s/deployment.yaml" | kubectl apply -f -
+          kubectl apply -f "${{ github.workspace }}/k8s/service.yaml"
+          kubectl rollout status deployment/agente-app -n agente --timeout=300s
