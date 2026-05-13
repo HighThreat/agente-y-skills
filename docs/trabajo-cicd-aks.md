@@ -2,9 +2,9 @@
 
 ## 1) Objetivo
 Desplegar este repositorio en Azure usando:
-- Terraform (`/home/runner/work/agente-y-skills/agente-y-skills/infra`)
-- GitHub Actions (`/home/runner/work/agente-y-skills/agente-y-skills/.github/workflows/deploy-aks.yml`)
-- Manifiestos Kubernetes (`/home/runner/work/agente-y-skills/agente-y-skills/k8s`)
+- Terraform (`infra/`)
+- GitHub Actions (`.github/workflows/deploy-aks.yml`)
+- Manifiestos Kubernetes (`k8s/`)
 
 ## 2) Preparar Azure (OIDC + permisos + backend)
 
@@ -18,7 +18,7 @@ export GITHUB_BRANCH="main"
 
 export APP_NAME="gh-oidc-agente-y-skills"
 export TFSTATE_RG="tfstate-rg"
-export TFSTATE_STORAGE="tfstateaccount"     # debe ser globalmente único y minúsculas
+export TFSTATE_STORAGE="tfstate<tuorg><random>"     # debe ser globalmente único y minúsculas
 export TFSTATE_CONTAINER="tfstate"
 ```
 
@@ -106,7 +106,7 @@ El workflow ejecuta:
 ## 5) Verificación post-despliegue
 
 ### 5.1 Validar ejecución en GitHub Actions
-- Revisar run de `/home/runner/work/agente-y-skills/agente-y-skills/.github/workflows/deploy-aks.yml`.
+- Revisar run de `.github/workflows/deploy-aks.yml`.
 - Confirmar pasos exitosos de Terraform, Docker push y rollout.
 
 ### 5.2 Validar recursos en Azure
