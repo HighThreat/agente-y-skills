@@ -1,15 +1,15 @@
-# agente-y-skills
+# Leo AKS CI/CD (Azure & Terraform)
 
-Trabajo base de CI/CD para despliegue en **Azure AKS** con GitHub Actions y Terraform.
+Trabajo base de CI/CD para despliegue automatizado en **Azure AKS** utilizando **GitHub Actions** y **Terraform**.
 
-## Contenido
-- `/home/runner/work/agente-y-skills/agente-y-skills/docs/trabajo-cicd-aks.md`: documentación funcional del flujo (adaptable a Azure).
-- `/home/runner/work/agente-y-skills/agente-y-skills/infra`: infraestructura Terraform (Resource Group, AKS, ACR y backend remoto en Azure Storage).
-- `/home/runner/work/agente-y-skills/agente-y-skills/.github/workflows/deploy-aks.yml`: pipeline de despliegue.
-- `/home/runner/work/agente-y-skills/agente-y-skills/k8s`: manifiestos Kubernetes.
+## 📁 Contenido
+- `docs/trabajo-cicd-aks.md`: Documentación funcional del flujo (adaptable a Azure).
+- `infra/`: Infraestructura como Código en Terraform (Resource Group, AKS, ACR y backend remoto en Azure Storage).
+- `.github/workflows/deploy-aks.yml`: Pipeline de despliegue principal.
+- `k8s/`: Manifiestos de Kubernetes para la aplicación.
 
-## Prerrequisitos Azure
-1. Resource Group + Storage Account + Container para estado remoto de Terraform (definido en `/home/runner/work/agente-y-skills/agente-y-skills/infra/backend.tf`).
+## ⚙️ Prerrequisitos Azure
+1. Resource Group + Storage Account + Container para estado remoto de Terraform (definido en `infra/backend.tf`).
 2. Federated credential OIDC de GitHub Actions en una App Registration/Service Principal de Azure con permisos para:
    - AKS (crear/actualizar clúster)
    - ACR (push/pull)
